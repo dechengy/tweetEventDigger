@@ -2,11 +2,7 @@ package myApacheStorm;
 import org.apache.storm.Config;
 import org.apache.storm.LocalCluster;
 import org.apache.storm.topology.TopologyBuilder;
-import org.apache.storm.utils.Utils;
-/**
- * Hello world!
- *
- */
+
 public class App 
 {
     private static final String TWEETSTREAM_SPOUT_ID = "TweetStream-Spout";

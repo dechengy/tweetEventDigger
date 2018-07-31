@@ -93,6 +93,7 @@ public class TweetStreamSpout extends BaseRichSpout {
                 } else {
                     queue.add(status);
                 }
+                Utils.sleep(500);
             }
 
             public void onStallWarning(StallWarning warning) {

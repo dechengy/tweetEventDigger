@@ -1,0 +1,20 @@
+extract the hashtags out
+judge the emotion of tweets
+
+machine learning to figure out event/not event?
+
+DB design(Tweetid,locations,hashtags,emotion)
+
+TweetStreamSpout -> DeleteOhtersBolt -> ExtractLocationBolt, insert into DB \>
+                                     -> ExtractHashtagsBolt, insert into DB -> EventDiggerBolt?
+                                     -> GetEmotionBolt, insert into DB      />
+
+Samples to learn if there is a event
+apply model on tweet streams
+
+bounderys in melb
+keeping linstening 3days
+save in csv.file
+uri
+
+
