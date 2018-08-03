@@ -11,12 +11,7 @@ import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Values;
 import org.apache.storm.utils.Utils;
 
-import twitter4j.StallWarning;
-import twitter4j.Status;
-import twitter4j.StatusDeletionNotice;
-import twitter4j.StatusListener;
-import twitter4j.TwitterStream;
-import twitter4j.TwitterStreamFactory;
+import twitter4j.*;
 import twitter4j.auth.AccessToken;
 
 public class TweetStreamSpout extends BaseRichSpout {
@@ -24,13 +19,21 @@ public class TweetStreamSpout extends BaseRichSpout {
     private LinkedList<Status> queue = null;
     private TwitterStream twitterStream;
 
-    private static final String customer_key = Conf.customer_key;
-    private static final String secret_key = Conf.secret_key;
-    private static final String access_token = Conf.access_token;
-    private static final String secret_access_token = Conf.secret_access_token;
+    public static final String customer_key = "ujqGAvWCv9C14893iDGd8aUfb";
+    public static final String secret_key = "7VQIxQ8cQJ0mQQwre9nRG0uJ2LEBRlHmOcPUpjHPHO9DmsoDTE";
+    public static final String access_token = "985020272716595200-uaGcLS4bODn5cP2MMl2NiRRWyKbBoyS";
+    public static final String secret_access_token = "CWgEX0NxeIVMpM1syspP7ZzvQeMgdGncTekIkgiGvECn9";
 
-    private String output1;
-    private String output2;
+    private long current_id=0;
+    private long last_id=0;
+    private String output = "";
+    private String userid = "";
+    private String username="";
+    private GeoLocation geolocation;
+    private String latitude="";
+    private String longitude="";
+    private String text="";
+
 
     public static void main(String[] args) {
         // TODO Auto-generated method stub
@@ -38,35 +41,44 @@ public class TweetStreamSpout extends BaseRichSpout {
 
     public void nextTuple() {
         // TODO Auto-generated method stub
-//		Status current = queue.poll();
-//		if (current==null){
-//			System.out.println("Status is empty!");
-//			Utils.sleep(100);
-//			}
-//		else{
-//		output = current.getUser() + " : " +current.getText().toLowerCase();
-//		collector.emit(new Values(output));
-//		Utils.sleep(100);
-//		}
         if (queue.isEmpty()) {
             System.out.println("queue is empty");
         } else {
             Status current = queue.getLast();
-
-            output1 = current.getUser().getName() + " : " + current.getText().toLowerCase();
-//		System.out.println("Spout:   "+output);
-            if (output1 == null) {
-                System.out.println("Status is empty");
-            } else if (output1.equals(output2)) {
-                Utils.sleep(100);
-            } else {
-                this.collector.emit(new Values(output1));
-//			System.out.println("Spout:   "+output1);
-                output2 = output1;
-                output1 = null;
+            current_id= current.getId();
+            if(last_id==current_id) {
+                Utils.sleep(10);
+            }else
+            {
+                userid=String.valueOf(current.getUser().getId());
+                username=current.getUser().getName();
+                try{
+                    geolocation = current.getGeoLocation();
+                    latitude = String.valueOf(geolocation.getLatitude());
+                    longitude = String.valueOf(geolocation.getLongitude());
+                }catch (Exception e){
+                    latitude = "";
+                    longitude = "";
+                }
+                text = current.getText().replace("\'","");
+                text= text.replace("\"","");
+                text = text.replace("\n","");
+                text = text.replace("\t","");
+                text = text.replace("\\","");
+                text = text.replace("/","");
+                output = "{\"UserID\":\"" + userid + "\"," +
+                        "\"UserName\":\"" + username + "\"," +
+                        "\"Latitude\":\"" + latitude + "\"," +
+                        "\"Longitude\":\"" + longitude + "\"," +
+                        "\"ID\":\"" + current_id + "\"," +
+                        "\"Text\":\"" + text + "\"}";
+                if(!longitude.equals("")){
+                    collector.emit(new Values(output));
+                }
+                last_id=current_id;
             }
         }
-        Utils.sleep(100);
+        Utils.sleep(10);
     }
 
     public void open(Map conf, TopologyContext context, SpoutOutputCollector collector) {
@@ -93,7 +105,7 @@ public class TweetStreamSpout extends BaseRichSpout {
                 } else {
                     queue.add(status);
                 }
-                Utils.sleep(500);
+                Utils.sleep(10);
             }
 
             public void onStallWarning(StallWarning warning) {
@@ -117,8 +129,11 @@ public class TweetStreamSpout extends BaseRichSpout {
         twitterStream.setOAuthAccessToken(new AccessToken(access_token, secret_access_token));
 
         twitterStream.addListener(listener);
-        System.out.println("Listener 已经添加");
-        twitterStream.sample("en");
+        System.out.println("Listener Added");
+        FilterQuery filterQuery = new FilterQuery();
+        double[][] location = {{144.5937,-38.4339},{145.5125,-37.5113}};
+        filterQuery.locations(location);
+        twitterStream.filter(filterQuery);
 
     }
 
