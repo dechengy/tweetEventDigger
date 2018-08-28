@@ -33,6 +33,7 @@ public class TweetStreamSpout extends BaseRichSpout {
     private String latitude="";
     private String longitude="";
     private String text="";
+    private String date = "";
 
 
     public static void main(String[] args) {
@@ -50,8 +51,10 @@ public class TweetStreamSpout extends BaseRichSpout {
                 Utils.sleep(10);
             }else
             {
+//                System.out.println(current.getCreatedAt().toString());
                 userid=String.valueOf(current.getUser().getId());
                 username=current.getUser().getName();
+                date=current.getCreatedAt().toString();
                 try{
                     geolocation = current.getGeoLocation();
                     latitude = String.valueOf(geolocation.getLatitude());
@@ -71,6 +74,7 @@ public class TweetStreamSpout extends BaseRichSpout {
                         "\"Latitude\":\"" + latitude + "\"," +
                         "\"Longitude\":\"" + longitude + "\"," +
                         "\"ID\":\"" + current_id + "\"," +
+                        "\"Date\":\"" + date + "\"," +
                         "\"Text\":\"" + text + "\"}";
                 if(!longitude.equals("")){
                     collector.emit(new Values(output));

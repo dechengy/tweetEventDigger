@@ -28,7 +28,7 @@ public class SaveTweetBolt extends BaseRichBolt{
         excapeString = tweet.replace("\\\'","\'");
         System.out.println(tweet);
         obj = new JSONObject(excapeString);
-        if(array.length()<10){
+        if(array.length()<3){
             array.put(obj);
             System.out.println(obj.toString());
         }
@@ -55,6 +55,7 @@ public class SaveTweetBolt extends BaseRichBolt{
         String latitude = "";
         String longitude = "";
         String text = "";
+        String date = "";
 
         String sql = "";
 
@@ -73,11 +74,18 @@ public class SaveTweetBolt extends BaseRichBolt{
                 latitude = obj.getString("Latitude");
                 longitude = obj.getString("Longitude");
                 text = obj.getString("Text");
+                date = obj.getString("Date").toString();
 
-                sql = "INSERT INTO tweet (Id,Userid,Username,Latitude,Longitude,Text) VALUES "+
-                        "("+id+","+userid+",'"+username+"',"+latitude+","+longitude+",'"+text+"')";
+
+                sql = "INSERT INTO tweet (Id,Userid,Username,Latitude,Longitude,Text,Date) VALUES "+
+                        "("+id+","+userid+",'"+username+"',"+latitude+","+longitude+",'"+text+"','"+date+"')";
                 System.out.println(sql);
+                try{
                 stmt.executeUpdate(sql);
+                }
+                catch(Exception e){
+                    System.out.println("SQL error");
+                }
             }
             stmt.close();
             conn.close();
